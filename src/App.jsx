@@ -1,15 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { siteConfig } from './config';
 import monogramaImg from '../public/monograma.png';
 import { Menu, X, Clock, MapPin, CameraOff, Heart, Check, Copy, ChevronDown, Flower2, CreditCard } from 'lucide-react';
-
-const FloralDivider = () => (
-  <div className="flex justify-center items-center py-12 opacity-60">
-    <div className="h-[1px] w-16 bg-[#C29B98]"></div>
-    <Flower2 className="w-6 h-6 mx-4 text-[#C29B98]" strokeWidth={1} />
-    <div className="h-[1px] w-16 bg-[#C29B98]"></div>
-  </div>
-);
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -21,7 +13,14 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const links = ['História', 'Galeria', 'Detalhes', 'Local', 'Presença', 'Presentes'];
+  const links = [
+    { label: 'História', id: 'historia' },
+    { label: 'Galeria', id: 'galeria' },
+    { label: 'Detalhes', id: 'detalhes' },
+    { label: 'Local', id: 'local' },
+    { label: 'Presença', id: 'presenca' },
+    { label: 'Presentes', id: 'presentes' },
+  ];
 
   return (
     <header className={`fixed w-full z-40 transition-all duration-500 ${isScrolled ? 'bg-white/95 backdrop-blur-md shadow-sm py-4' : 'bg-transparent py-6'}`}>
@@ -37,13 +36,19 @@ const Header = () => {
         
         <nav className="hidden md:flex gap-6 lg:gap-8">
           {links.map(link => (
-            <a key={link} href={`#${link.toLowerCase().replace('ç', 'c')}`} className={`text-sm uppercase tracking-[0.15em] hover:text-[#C29B98] transition-colors ${isScrolled ? 'text-[#4A4A4A]' : 'text-white'}`}>
-              {link}
+            <a key={link.id} href={`#${link.id}`} className={`text-sm uppercase tracking-[0.15em] hover:text-[#C29B98] transition-colors ${isScrolled ? 'text-[#4A4A4A]' : 'text-white'}`}>
+              {link.label}
             </a>
           ))}
         </nav>
 
-        <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)}>
+        <button
+          type="button"
+          className="md:hidden"
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
+          aria-expanded={menuOpen}
+        >
           {menuOpen ? <X color={isScrolled ? '#4A4A4A' : '#FFF'} /> : <Menu color={isScrolled ? '#4A4A4A' : '#FFF'} />}
         </button>
       </div>
@@ -51,8 +56,8 @@ const Header = () => {
       {menuOpen && (
         <div className="absolute top-full left-0 w-full bg-white shadow-lg flex flex-col items-center py-6 gap-6 md:hidden">
           {links.map(link => (
-            <a key={link} href={`#${link.toLowerCase().replace('ç', 'c')}`} onClick={() => setMenuOpen(false)} className="text-[#4A4A4A] uppercase tracking-widest text-sm">
-              {link}
+            <a key={link.id} href={`#${link.id}`} onClick={() => setMenuOpen(false)} className="text-[#4A4A4A] uppercase tracking-widest text-sm">
+              {link.label}
             </a>
           ))}
         </div>
@@ -66,18 +71,20 @@ const Hero = () => {
 
   useEffect(() => {
     const target = new Date(siteConfig.dataCasamento).getTime();
-    const interval = setInterval(() => {
+    const updateCountdown = () => {
       const now = new Date().getTime();
       const distance = target - now;
-      if (distance > 0) {
-        setTimeLeft({
-          dias: Math.floor(distance / (1000 * 60 * 60 * 24)),
-          horas: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-          minutos: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-          segundos: Math.floor((distance % (1000 * 60)) / 1000)
-        });
-      }
-    }, 1000);
+      const remaining = Math.max(0, distance);
+      setTimeLeft({
+        dias: Math.floor(remaining / (1000 * 60 * 60 * 24)),
+        horas: Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        minutos: Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60)),
+        segundos: Math.floor((remaining % (1000 * 60)) / 1000)
+      });
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -122,7 +129,7 @@ const Hero = () => {
 };
 
 const Story = () => (
-  <section id="história" className="py-24 px-6 max-w-6xl mx-auto">
+  <section id="historia" className="py-24 px-6 max-w-6xl mx-auto">
     <div className="text-center mb-16">
       <h2 className="text-4xl md:text-5xl text-[#4A4A4A] mb-4 font-serif">Nossa História</h2>
       <p className="font-['Great_Vibes'] text-3xl text-[#C29B98]">Como tudo começou</p>
@@ -300,10 +307,25 @@ const GiftsModal = ({ isOpen, onClose, presente }) => {
 
   if (!isOpen || !presente) return null;
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(siteConfig.pix.chave);
-    setCopiado(true);
-    setTimeout(() => setCopiado(false), 3000);
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(siteConfig.pix.chave);
+      setCopiado(true);
+      window.setTimeout(() => setCopiado(false), 3000);
+    } catch {
+      const campo = document.createElement('textarea');
+      campo.value = siteConfig.pix.chave;
+      campo.style.position = 'fixed';
+      campo.style.opacity = '0';
+      document.body.appendChild(campo);
+      campo.select();
+      const copiou = document.execCommand('copy');
+      campo.remove();
+      if (copiou) {
+        setCopiado(true);
+        window.setTimeout(() => setCopiado(false), 3000);
+      }
+    }
   };
 
   const valorFormatado = presente.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -380,7 +402,7 @@ const Gifts = () => {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        {siteConfig.presentes.make ? null : siteConfig.presentes.map((presente) => (
+        {siteConfig.presentes.map((presente) => (
           <div key={presente.id} className="group bg-white flex flex-col border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
             <div className="relative overflow-hidden h-32 md:h-48 bg-gray-50">
               <img 

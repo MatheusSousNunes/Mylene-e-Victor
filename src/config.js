@@ -43,12 +43,12 @@ export const siteConfig = {
     historia: "https://images.unsplash.com/photo-1606800052052-a08af7148866?q=80&w=1000&auto=format&fit=crop",
     
     galeria: [
-      "/foto1.jpeg",
-      "/foto2.jpeg",
-      "/foto3.jpeg",
-      "/foto4.jpeg",
-      "/foto5.jpeg",
-      "/foto6.jpeg"
+      "/fotoo1.jpeg",
+      "/fotoo2.jpeg",
+      "/fotoo3.jpeg",
+      "/fotoo4.jpeg",
+      "/fotoo5.jpeg",
+      "/fotoo6.jpeg"
     ]
   },
 
