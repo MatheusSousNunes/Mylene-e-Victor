@@ -6,7 +6,6 @@ export const siteConfig = {
   },
   dataCasamento: "2027-01-30T16:00:00", 
   dataFormatada: "30 de Janeiro de 2027",
-  
   pix: {
     chave: "79999894998", 
     nomeRecebedor: "Victor Trindade",
